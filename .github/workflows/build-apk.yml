@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Télécharger le dépôt
+      - name: Récupérer le dépôt
         uses: actions/checkout@v4
 
       - name: Installer Java 17
@@ -18,22 +18,31 @@ jobs:
           java-version: "17"
 
       - name: Installer Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
+        with:
+          packages: ""
 
-      - name: Installer les outils Android
-        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Installer les composants Android
+        run: |
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Installer Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
 
       - name: Décompresser ArtisanFlow
         run: |
+          rm -rf project
           mkdir project
           unzip -q ArtisanFlow_GitHubActions_V1.zip -d project
 
-      - name: Compiler l'application
+      - name: Compiler ArtisanFlow
         working-directory: project
         run: |
           gradle :app:assembleDebug --no-daemon
 
-      - name: Récupérer l'APK
+      - name: Publier l'APK
         uses: actions/upload-artifact@v4
         with:
           name: ArtisanFlow-APK
